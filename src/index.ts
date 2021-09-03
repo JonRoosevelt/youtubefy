@@ -1,6 +1,6 @@
 import express from "express";
 import getAccessToken from "./spotify/authorization/get-access-token";
-import getFollowingArtists from "./spotify/following-artists/followingArtists";
+import getFollowingArtists from "./spotify/following-artists/folowing-artists";
 
 import {ARTISTS_URL, AUTHORIZATION_URL, CLIENT_ID, REDIRECT_URI} from "./spotify/consts";
 
@@ -22,9 +22,9 @@ app.get('/callback', async (req, res) => {
   const { accessToken }: any = await getAccessToken(code);
   const artistList: string[] = [];
   if (accessToken) {
-    const followingArtists = await getFollowingArtists(accessToken, ARTISTS_URL, artistList);
-    if (followingArtists) {
-      res.send(artistList.flat(2).sort())
+    await getFollowingArtists(accessToken, ARTISTS_URL, artistList);
+    if (artistList.length > 0) {
+      res.send(artistList.sort())
     } else {
       res.status(400)
         .send('invalid access token')
