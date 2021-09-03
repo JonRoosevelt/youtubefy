@@ -1,22 +1,23 @@
-import request from "request";
+import fetch from 'node-fetch';
 
+type Artist = {
+  external_urls: {
+    spotify: string;
+  },
+  name: string
+}
 
-const getFollowingArtists = async(accessToken: string) => {
-  const authOptions = {
-    url: 'https://api.spotify.com/v1/me/following?type=artist',
-    headers: { 'Authorization': 'Bearer ' + accessToken},
-    json: true
-  };
-
-  // use the access token to access the Spotify Web API
-  await request.get(authOptions, (req, res) => {
-    if (res?.statusCode === 200) {
-      const { data } = res.body;
-      return {
-        artists: data
-      }
-    }
-  })
+const getFollowingArtists = async(accessToken: string, url: string, artistList: string[]) => {
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  }).then(res => res.json())
+  artistList.push(response.artists.items.map((artist: Artist) => artist.name))
+  if (response.artists.next) {
+    await getFollowingArtists(accessToken, response.artists.next, artistList)
+  }
+  return artistList
 }
 
 export default getFollowingArtists;

@@ -1,4 +1,4 @@
-const getFollowingArtists = require("./followingArtists");
+import getFollowingArtists from "./followingArtists";
 
 describe('followingArtists', () => {
   it('should return as expected', () => {
@@ -6,7 +6,7 @@ describe('followingArtists', () => {
       {'name': 'artist one'},
       {'name': 'artist two'}
     ]
-    const artists = getFollowingArtists();
+    const artists = getFollowingArtists('any');
     expect(artists).toEqual(expectedArtists);
   })
 })
