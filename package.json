@@ -26,6 +26,7 @@
   "author": "jonmartins",
   "license": "ISC",
   "dependencies": {
+    "@types/filesystem": "0.0.32",
     "babel-jest": "^27.1.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",

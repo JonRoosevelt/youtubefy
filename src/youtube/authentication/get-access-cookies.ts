@@ -1,79 +1,79 @@
 import fs from 'fs';
 import readline from 'readline';
-import {google} from 'googleapis';
-import { OAuth2Client, StreamMethodOptions } from 'googleapis-common';
+import { google, youtube_v3 } from 'googleapis';
+import { OAuth2Client } from 'googleapis-common';
+import { BodyResponseCallback } from 'googleapis-common/build/src/api';
+import Schema$ActivitySnippet = youtube_v3.Schema$ActivitySnippet;
 const OAuth2 = google.auth.OAuth2;
 
 type Credentials = {
   installed: {
-    client_secret: string,
-    client_id: string,
-    redirect_uris: string[]
-  }
-}
+    client_secret: string;
+    client_id: string;
+    redirect_uris: string[];
+  };
+};
 
-
-// If modifying these scopes, delete your previously saved credentials
-// at ~/.credentials/youtube-nodejs-quickstart.json
-var SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
-var TOKEN_DIR = '../../../credentials'
-var TOKEN_PATH = `${TOKEN_DIR}/youtube.json`;
+const SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
+const TOKEN_DIR = '../credentials';
+const TOKEN_PATH = `${TOKEN_DIR}/youtube.json`;
 
 // Load client secrets from a local file.
-fs.readFile('client_secret.json', function processClientSecrets(err, content) {
-  if (err) {
-    console.log('Error loading client secret file: ' + err);
-    return;
-  }
-  // Authorize a client with the loaded credentials, then call the YouTube API.
-  authorize(JSON.parse(content.toString()), getChannel);
-});
+export const getAccessCookies = () => {
+  fs.readFile(
+    'client_secret.json',
+    function processClientSecrets(err, content) {
+      if (err) {
+        console.log('Error loading client secret file: ' + err);
+        return;
+      }
+      // Authorize a client with the loaded credentials, then call the YouTube API.
+      authorize({
+        credentials: JSON.parse(content.toString()),
+        callback: getChannel,
+      });
+    }
+  );
+};
 
-/**
- * Create an OAuth2 client with the given credentials, and then execute the
- * given callback function.
- *
- * @param {Object} credentials The authorization client credentials.
- * @param {function} callback The callback to call with the authorized client.
- */
-function authorize(credentials: Credentials, callback: { (auth: any): void; (arg0: OAuth2Client): void; }) {
-  var clientSecret = credentials.installed.client_secret;
-  var clientId = credentials.installed.client_id;
-  var redirectUrl = credentials.installed.redirect_uris[0];
-  var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
+interface AuthorizeParams {
+  credentials: Credentials;
+  callback: (arg0: OAuth2Client) => void;
+}
+
+function authorize({ credentials, callback }: AuthorizeParams) {
+  const clientSecret = credentials.installed.client_secret;
+  const clientId = credentials.installed.client_id;
+  const redirectUrl = credentials.installed.redirect_uris[0];
+  const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
 
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, (err, token: Buffer): void => {
-      if (err) {
-        getNewToken(oauth2Client, callback);
-      } else {
-        oauth2Client.credentials = JSON.parse(token.toString());
-        callback(oauth2Client);
-      }
-    });
+    if (err) {
+      getNewToken(oauth2Client, callback);
+    } else {
+      oauth2Client.credentials = JSON.parse(token.toString());
+      callback(oauth2Client);
+    }
+  });
 }
 
-/**
- * Get and store new token after prompting for user authorization, and then
- * execute the given callback with the authorized OAuth2 client.
- *
- * @param {google.auth.OAuth2} oauth2Client The OAuth2 client to get token for.
- * @param {getEventsCallback} callback The callback to call with the authorized
- *     client.
- */
-function getNewToken(oauth2Client: OAuth2Client, callback: (arg0: any) => void) {
-  var authUrl = oauth2Client.generateAuthUrl({
+function getNewToken(
+  oauth2Client: OAuth2Client,
+  callback: (arg0: any) => void
+) {
+  const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
-    scope: SCOPES
+    scope: SCOPES,
   });
   console.log('Authorize this app by visiting this url: ', authUrl);
-  var rl = readline.createInterface({
+  const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
-  rl.question('Enter the code from that page here: ', function(code) {
+  rl.question('Enter the code from that page here: ', (code) => {
     rl.close();
-    oauth2Client.getToken(code, function(err: any, token: any) {
+    oauth2Client.getToken(code, (err: any, token: any) => {
       if (err) {
         console.log('Error while trying to retrieve access token', err);
         return;
@@ -94,7 +94,7 @@ function storeToken(token: any) {
   try {
     fs.mkdirSync(TOKEN_DIR);
   } catch (err: any) {
-    if (err.code != 'EEXIST') {
+    if (err.code !== 'EEXIST') {
       throw err;
     }
   }
@@ -104,31 +104,43 @@ function storeToken(token: any) {
   });
 }
 
-/**
- * Lists the names and IDs of up to 10 files.
- *
- * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
- */
-function getChannel(auth: any) {
-  var service = google.youtube('v3');
-  service.channels.list({
-    auth: auth,
-    part: ['snippet','contentDetails','statistics'],
-    forUsername: 'GoogleDevelopers'
-  }, (err: string, response: any): StreamMethodOptions | void => {
+interface Schema$Channel {
+  items: {
+    id?: string | null;
+    snippet?: Schema$ActivitySnippet;
+    statistics?: {
+      viewCount?: string | null;
+    };
+  }[];
+}
+function getChannel(auth: OAuth2Client) {
+  const service = google.youtube('v3');
+  service.channels.list(
+    {
+      auth,
+      part: ['snippet', 'contentDetails', 'statistics'],
+      forUsername: 'GoogleDevelopers',
+    },
+    (err, _response): BodyResponseCallback<Schema$Channel> | undefined => {
       if (err) {
         console.log('The API returned an error: ' + err);
         return;
       }
-      var channels = response.data.items;
-      if (channels.length == 0) {
-        console.log('No channel found.');
-      } else {
-        console.log('This channel\'s ID is %s. Its title is \'%s\', and ' +
-          'it has %s views.',
-          channels[0].id,
-          channels[0].snippet.title,
-          channels[0].statistics.viewCount);
+      const channels = _response?.data?.items;
+      if (channels) {
+        if (channels.length === 0) {
+          console.log('No channel found.');
+        } else {
+          console.log(
+            "This channel's ID is %s. Its title is '%s', and " +
+              'it has %s views.',
+            channels[0]?.id,
+            channels[0]?.snippet?.title,
+            channels[0]?.statistics?.viewCount
+          );
+        }
       }
-    });
+    }
+  );
 }
+
