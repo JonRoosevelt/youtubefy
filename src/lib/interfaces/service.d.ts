@@ -1,11 +1,14 @@
-import {oauth2_v2} from "googleapis";
-import {OAuth2Client} from "google-auth-library";
-
+import { Express } from 'express';
+import { OAuth2Client } from 'googleapis-common';
 export interface Credentials {
-  OAuthClient: OAuth2Client
+  web: {
+    clientId: string;
+    clientSecret: string;
+    redirectUri: string;
+  };
 }
 
 export interface ClientService {
-  authenticateWithOauth: (credentials: OAuth2Client) => void
-  performAction: () => Promise<string>
+  createOAuthClient(credentials: Credentials): Promise<OAuth2Client>;
+  waitForServiceCallback(app: Express): Promise<string>;
 }
