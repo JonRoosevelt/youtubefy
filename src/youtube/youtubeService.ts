@@ -6,7 +6,7 @@ import { google } from 'googleapis';
 const OAuth2 = google.auth.OAuth2;
 
 interface YoutubeClientService {
-  requestUserConsent(OAuthClient: OAuth2Client): void;
+  requestUserConsent(OAuthClient: OAuth2Client | string): void;
 }
 
 export const youtubeClientService: ClientService & YoutubeClientService = {

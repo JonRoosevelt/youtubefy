@@ -13,8 +13,8 @@ const getFollowingArtists = async(accessToken: string, url: string, artistList: 
       Authorization: `Bearer ${accessToken}`,
     },
   }).then(res => res.json())
-  response.artists.items.forEach((artist: Artist) => artistList.push(artist.name))
-  if (response.artists.next) {
+  response?.artists?.items.forEach((artist: Artist) => artistList.push(artist?.name))
+  if (response?.artists?.next) {
     await getFollowingArtists(accessToken, response.artists.next, artistList)
   }
 }

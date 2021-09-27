@@ -9,6 +9,6 @@ export interface Credentials {
 }
 
 export interface ClientService {
-  createOAuthClient(credentials: Credentials): Promise<OAuth2Client>;
-  waitForServiceCallback(app: Express): Promise<string>;
+  createOAuthClient(credentials: Credentials): Promise<OAuth2Client | string>;
+  waitForServiceCallback(app: Express): Promise<string | void>;
 }

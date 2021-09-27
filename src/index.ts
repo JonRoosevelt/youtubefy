@@ -1,14 +1,12 @@
 import express from 'express';
-import getAccessToken from './spotify/authorization/get-access-token';
+import tokenUtils from './spotify/authorization/token-utils';
 import getFollowingArtists from './spotify/following-artists/folowing-artists';
-
 import { youtubeClientService } from './youtube/youtubeService';
 
 import {
-  ARTISTS_URL,
-  AUTHORIZATION_URL,
-  CLIENT_ID,
-  REDIRECT_URI,
+  SPOTIFY_CLIENT_ID,
+  SPOTIFY_CLIENT_SECRET,
+  SPOTIFY_REDIRECT_URI,
 } from './spotify/consts';
 
 import {
@@ -16,10 +14,18 @@ import {
   YOUTUBE_CLIENT_SECRET,
   YOUTUBE_REDIRECT_URI,
 } from './youtube/consts';
+import { spotifyClientService } from './spotify/spotifyService';
 
 const app = express();
-
 const port = 8888;
+
+const SPOTIFY_CREDENTIALS = {
+  web: {
+    clientId: SPOTIFY_CLIENT_ID,
+    clientSecret: SPOTIFY_CLIENT_SECRET,
+    redirectUri: SPOTIFY_REDIRECT_URI,
+  },
+};
 
 const YOUTUBE_CREDENTIALS = {
   web: {
@@ -29,32 +35,12 @@ const YOUTUBE_CREDENTIALS = {
   },
 };
 
-app.get('/spotify/login', (_req, res) => {
-  const scopes = 'user-read-private user-read-email user-follow-read';
-  res.redirect(
-    AUTHORIZATION_URL +
-      '?response_type=code' +
-      '&client_id=' +
-      CLIENT_ID +
-      (scopes ? '&scope=' + encodeURIComponent(scopes) : '') +
-      '&redirect_uri=' +
-      encodeURIComponent(REDIRECT_URI)
-  );
-});
-
-app.get('/spotify/callback', async (req, res) => {
-  const code = req.url.substring(req.url.indexOf('code=') + 5, req.url.length);
-  const { accessToken }: any = await getAccessToken(code);
-  const artistList: string[] = [];
-  if (accessToken) {
-    await getFollowingArtists(accessToken, ARTISTS_URL, artistList);
-    if (artistList.length > 0) {
-      res.send(artistList.sort());
-    } else {
-      res.status(400).send('invalid access token');
-    }
-  } else {
-    res.status(400).send('invalid access token');
+app.get('/spotify/login', async (_req, res) => {
+  const { createOAuthClient, redirect, waitForServiceCallback } = spotifyClientService;
+  const oAuthClient = await createOAuthClient(SPOTIFY_CREDENTIALS);
+  if (typeof oAuthClient === 'string') {
+    redirect(res, oAuthClient);
+    await waitForServiceCallback(app)
   }
 });
 
