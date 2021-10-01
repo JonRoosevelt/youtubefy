@@ -19,7 +19,7 @@ describe('tokenUtils',  () => {
         mockedResponse({access_token: 'any token'})
       )
     )
-    const accessToken = await tokenUtils('any code');
+    const accessToken = await tokenUtils.getAccessToken('any code');
     const expectedAccessToken = {accessToken: 'any token'}
     expect(accessToken).toEqual(expectedAccessToken)
   })
