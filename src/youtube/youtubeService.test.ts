@@ -1,7 +1,7 @@
-import { Credentials } from '../lib/interfaces/service';
+import { Credentials as ServiceCredentials } from '../lib/interfaces/service';
 import { youtubeClientService } from './youtubeService';
 import { google } from 'googleapis';
-import { OAuth2Client } from 'google-auth-library';
+import { Credentials, OAuth2Client } from 'google-auth-library';
 
 const OAuth2 = google.auth.OAuth2;
 
@@ -20,7 +20,7 @@ describe('youtubeClientService', () => {
   beforeAll(() => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
   });
-  const credentials: Credentials = {
+  const credentials: ServiceCredentials = {
     web: {
       clientId: 'any client',
       clientSecret: 'any secret',
@@ -52,6 +52,40 @@ describe('youtubeClientService', () => {
       expect(oauthClient.generateAuthUrl).toHaveBeenCalledWith(
         expectedGenerateAuthUrlParams
       );
+    });
+  });
+  describe('requestServiceForAccessToken', () => {
+    jest.mock('google-auth-library');
+    const mockedOauthClient = new OAuth2({
+      ...credentials.web,
+    }) as OAuth2Client;
+    describe('when available token', () => {
+      const mockedToken = 'any-token';
+      const mockedGetToken = jest.fn().mockImplementation(() => {
+        return {
+          tokens: mockedToken,
+        };
+      });
+      const mockedSetCredentials = jest.fn();
+      beforeEach(() => {
+        jest
+          .spyOn(mockedOauthClient, 'getToken')
+          .mockImplementation(mockedGetToken);
+        jest
+          .spyOn(mockedOauthClient, 'setCredentials')
+          .mockImplementation(mockedSetCredentials);
+      });
+
+      it('should set credentials with expected token', async () => {
+        const authorizationToken = 'any-auth-token';
+        await youtubeClientService.requestServiceForAccessToken(
+          mockedOauthClient,
+          authorizationToken
+        );
+        expect(mockedOauthClient.setCredentials).toHaveBeenCalledWith(
+          mockedToken
+        );
+      });
     });
   });
 });

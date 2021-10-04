@@ -1,16 +1,28 @@
-import { ClientService, Credentials } from '../lib/interfaces/service';
+import {
+  ClientService,
+  Credentials as ServiceCredentials,
+} from '../lib/interfaces/service';
 import { Express } from 'express';
 import { OAuth2Client } from 'googleapis-common';
-import { google } from 'googleapis';
+import { google, Common } from 'googleapis';
+import { Credentials } from 'google-auth-library';
+import {
+  GetTokenCallback,
+  GetTokenResponse,
+} from 'google-auth-library/build/src/auth/oauth2client';
 
 const OAuth2 = google.auth.OAuth2;
 
 interface YoutubeClientService {
   requestUserConsent(OAuthClient: OAuth2Client | string): void;
+  requestServiceForAccessToken(
+    oauthClient: OAuth2Client,
+    authorizationToken: string
+  ): Promise<void>;
 }
 
 export const youtubeClientService: ClientService & YoutubeClientService = {
-  createOAuthClient: async (credentials: Credentials) => {
+  createOAuthClient: async (credentials: ServiceCredentials) => {
     return new OAuth2(
       credentials.web.clientId,
       credentials.web.clientSecret,
@@ -38,4 +50,36 @@ export const youtubeClientService: ClientService & YoutubeClientService = {
       });
     });
   },
+  requestServiceForAccessToken: async (
+    oauthClient: OAuth2Client,
+    authorizationToken: string
+  ) => {
+    try {
+      const { tokens } = await oauthClient.getToken(authorizationToken);
+      console.log('> Access tokens received');
+      console.log(tokens);
+      oauthClient.setCredentials(tokens);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  //requestServiceForAccessToken: async (
+  //oauthClient: OAuth2Client,
+  //authorizationToken: string
+  //) => {
+  //return new Promise((resolve, reject) => {
+  //oauthClient.getToken(
+  //authorizationToken,
+  //(error, tokens: Credentials | any) => {
+  //if (error) {
+  //reject(error);
+  //}
+  //console.log('> Access tokens received');
+  //console.log(tokens);
+  //oauthClient.setCredentials(tokens);
+  //resolve();
+  //}
+  //);
+  //});
+  //},
 };
