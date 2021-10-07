@@ -5,11 +5,6 @@ import {
 import { Express } from 'express';
 import { OAuth2Client } from 'googleapis-common';
 import { google, Common } from 'googleapis';
-import { Credentials } from 'google-auth-library';
-import {
-  GetTokenCallback,
-  GetTokenResponse,
-} from 'google-auth-library/build/src/auth/oauth2client';
 
 const OAuth2 = google.auth.OAuth2;
 
@@ -60,26 +55,7 @@ export const youtubeClientService: ClientService & YoutubeClientService = {
       console.log(tokens);
       oauthClient.setCredentials(tokens);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   },
-  //requestServiceForAccessToken: async (
-  //oauthClient: OAuth2Client,
-  //authorizationToken: string
-  //) => {
-  //return new Promise((resolve, reject) => {
-  //oauthClient.getToken(
-  //authorizationToken,
-  //(error, tokens: Credentials | any) => {
-  //if (error) {
-  //reject(error);
-  //}
-  //console.log('> Access tokens received');
-  //console.log(tokens);
-  //oauthClient.setCredentials(tokens);
-  //resolve();
-  //}
-  //);
-  //});
-  //},
 };

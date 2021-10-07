@@ -1,7 +1,7 @@
 import { Credentials as ServiceCredentials } from '../lib/interfaces/service';
 import { youtubeClientService } from './youtubeService';
 import { google } from 'googleapis';
-import { Credentials, OAuth2Client } from 'google-auth-library';
+import { OAuth2Client } from 'google-auth-library';
 
 const OAuth2 = google.auth.OAuth2;
 
@@ -19,6 +19,7 @@ type GenerateAuthUrl = {
 describe('youtubeClientService', () => {
   beforeAll(() => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
   const credentials: ServiceCredentials = {
     web: {
@@ -55,11 +56,14 @@ describe('youtubeClientService', () => {
     });
   });
   describe('requestServiceForAccessToken', () => {
-    jest.mock('google-auth-library');
-    const mockedOauthClient = new OAuth2({
-      ...credentials.web,
-    }) as OAuth2Client;
-    describe('when available token', () => {
+    let mockedOauthClient: OAuth2Client;
+    beforeEach(() => {
+      jest.mock('google-auth-library');
+      mockedOauthClient = new OAuth2({
+        ...credentials.web,
+      }) as OAuth2Client;
+    });
+    describe('token available', () => {
       const mockedToken = 'any-token';
       const mockedGetToken = jest.fn().mockImplementation(() => {
         return {
@@ -85,6 +89,22 @@ describe('youtubeClientService', () => {
         expect(mockedOauthClient.setCredentials).toHaveBeenCalledWith(
           mockedToken
         );
+      });
+    });
+    describe('token not available', () => {
+      beforeEach(() => {
+        jest.spyOn(mockedOauthClient, 'getToken');
+        jest.spyOn(mockedOauthClient, 'setCredentials');
+      });
+
+      it('should not set credentials', async () => {
+        const authorizationToken = 'any-auth-token';
+        await youtubeClientService.requestServiceForAccessToken(
+          mockedOauthClient,
+          authorizationToken
+        );
+        expect(mockedOauthClient.setCredentials).not.toHaveBeenCalled();
+        expect(console.error).toHaveBeenCalledTimes(1);
       });
     });
   });
