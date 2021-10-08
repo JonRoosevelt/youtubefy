@@ -1,16 +1,23 @@
-import { ClientService, Credentials } from '../lib/interfaces/service';
+import {
+  ClientService,
+  Credentials as ServiceCredentials,
+} from '../lib/interfaces/service';
 import { Express } from 'express';
 import { OAuth2Client } from 'googleapis-common';
-import { google } from 'googleapis';
+import { google, Common } from 'googleapis';
 
 const OAuth2 = google.auth.OAuth2;
 
 interface YoutubeClientService {
   requestUserConsent(OAuthClient: OAuth2Client | string): void;
+  requestServiceForAccessToken(
+    oauthClient: OAuth2Client,
+    authorizationToken: string
+  ): Promise<void>;
 }
 
 export const youtubeClientService: ClientService & YoutubeClientService = {
-  createOAuthClient: async (credentials: Credentials) => {
+  createOAuthClient: async (credentials: ServiceCredentials) => {
     return new OAuth2(
       credentials.web.clientId,
       credentials.web.clientSecret,
@@ -37,5 +44,18 @@ export const youtubeClientService: ClientService & YoutubeClientService = {
         }
       });
     });
+  },
+  requestServiceForAccessToken: async (
+    oauthClient: OAuth2Client,
+    authorizationToken: string
+  ) => {
+    try {
+      const { tokens } = await oauthClient.getToken(authorizationToken);
+      console.log('> Access tokens received');
+      console.log(tokens);
+      oauthClient.setCredentials(tokens);
+    } catch (error) {
+      console.error(error);
+    }
   },
 };

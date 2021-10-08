@@ -51,6 +51,7 @@ app.get('/youtube/login', async (_req, _res) => {
   requestUserConsent(OAuthClient);
 
   const authorizationToken = await waitForServiceCallback(app);
+  console.log(authorizationToken)
 });
 
 app.listen(port, () => {
