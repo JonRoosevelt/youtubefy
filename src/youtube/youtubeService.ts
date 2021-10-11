@@ -4,7 +4,8 @@ import {
 } from '../lib/interfaces/service';
 import { Express } from 'express';
 import { OAuth2Client } from 'googleapis-common';
-import { google, Common } from 'googleapis';
+import { google } from 'googleapis';
+import http from 'http';
 
 const OAuth2 = google.auth.OAuth2;
 
@@ -54,6 +55,15 @@ export const youtubeClientService: ClientService & YoutubeClientService = {
       console.log('> Access tokens received');
       console.log(tokens);
       oauthClient.setCredentials(tokens);
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  stopWebServer: (server: http.Server) => {
+    try {
+      console.log('* Stopping web server...');
+      server.close();
+      console.log('* Web server stopped');
     } catch (error) {
       console.error(error);
     }

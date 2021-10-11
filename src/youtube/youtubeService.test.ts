@@ -1,7 +1,8 @@
+import { OAuth2Client } from 'google-auth-library';
+import { google } from 'googleapis';
+import { Server } from 'http';
 import { Credentials as ServiceCredentials } from '../lib/interfaces/service';
 import { youtubeClientService } from './youtubeService';
-import { google } from 'googleapis';
-import { OAuth2Client } from 'google-auth-library';
 
 const OAuth2 = google.auth.OAuth2;
 
@@ -106,6 +107,14 @@ describe('youtubeClientService', () => {
         expect(mockedOauthClient.setCredentials).not.toHaveBeenCalled();
         expect(console.error).toHaveBeenCalledTimes(1);
       });
+    });
+  });
+  describe('stopWebServer', () => {
+    it('should call server.close', () => {
+      const mockedEmit = jest.spyOn(Server.prototype, 'close');
+      const server = new Server();
+      youtubeClientService.stopWebServer(server);
+      expect(mockedEmit).toHaveBeenCalled();
     });
   });
 });
