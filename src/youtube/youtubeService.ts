@@ -4,8 +4,8 @@ import {
 } from '../lib/interfaces/service';
 import { Express } from 'express';
 import { OAuth2Client } from 'googleapis-common';
-import { google, Common } from 'googleapis';
-
+import { google } from 'googleapis';
+import { commonService } from '../lib/common/commonService';
 const OAuth2 = google.auth.OAuth2;
 
 interface YoutubeClientService {
@@ -58,4 +58,5 @@ export const youtubeClientService: ClientService & YoutubeClientService = {
       console.error(error);
     }
   },
+  stopWebServer: commonService.stopWebServer,
 };

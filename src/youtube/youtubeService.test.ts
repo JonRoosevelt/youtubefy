@@ -1,7 +1,7 @@
+import { OAuth2Client } from 'google-auth-library';
+import { google } from 'googleapis';
 import { Credentials as ServiceCredentials } from '../lib/interfaces/service';
 import { youtubeClientService } from './youtubeService';
-import { google } from 'googleapis';
-import { OAuth2Client } from 'google-auth-library';
 
 const OAuth2 = google.auth.OAuth2;
 
