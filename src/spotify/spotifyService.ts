@@ -3,6 +3,7 @@ import { SPOTIFY_ARTISTS_URL, SPOTIFY_AUTHORIZATION_URL } from './consts';
 import { Express, Response } from 'express';
 import tokenUtils from './authorization/token-utils';
 import getFollowingArtists from './following-artists/folowing-artists';
+import { commonService } from '../lib/common/commonService';
 
 interface SpotifyClientService {
   redirect(app: Response, oauthUri: string): void;
@@ -45,4 +46,5 @@ export const spotifyClientService: ClientService & SpotifyClientService = {
       }
     });
   },
+  stopWebServer: commonService.stopWebServer,
 };

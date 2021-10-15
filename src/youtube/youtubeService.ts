@@ -5,8 +5,7 @@ import {
 import { Express } from 'express';
 import { OAuth2Client } from 'googleapis-common';
 import { google } from 'googleapis';
-import http from 'http';
-
+import { commonService } from '../lib/common/commonService';
 const OAuth2 = google.auth.OAuth2;
 
 interface YoutubeClientService {
@@ -59,13 +58,5 @@ export const youtubeClientService: ClientService & YoutubeClientService = {
       console.error(error);
     }
   },
-  stopWebServer: (server: http.Server) => {
-    try {
-      console.log('* Stopping web server...');
-      server.close();
-      console.log('* Web server stopped');
-    } catch (error) {
-      console.error(error);
-    }
-  },
+  stopWebServer: commonService.stopWebServer,
 };
