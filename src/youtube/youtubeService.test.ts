@@ -29,8 +29,8 @@ describe('youtubeClientService', () => {
     },
   };
   describe('createOAuthClient', () => {
-    it('should return expected OAuth2', async () => {
-      const oauth2 = await youtubeClientService.createOAuthClient(credentials);
+    it('should return expected OAuth2', () => {
+      const oauth2 = youtubeClientService.createOAuthClient(credentials);
       const { _clientId, _clientSecret, redirectUri } =
         oauth2 as Partial<oauth2>;
       expect(_clientId).toEqual(credentials.web.clientId);
@@ -106,6 +106,14 @@ describe('youtubeClientService', () => {
         expect(mockedOauthClient.setCredentials).not.toHaveBeenCalled();
         expect(console.error).toHaveBeenCalledTimes(1);
       });
+    });
+  });
+  describe('requestGoogleForAccessTokens', () => {
+    jest.spyOn(google, options);
+    it('should call google options with OAuth2Client', () => {
+      const oauthClient = new OAuth2({ ...credentials.web }) as OAuth2Client;
+      youtubeClientService.setGlobalGoogleAuthentication(oauthClient);
+      expect(google.options).toHaveBeenCalledWith({ auth: oauthClient });
     });
   });
 });

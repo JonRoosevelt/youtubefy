@@ -14,10 +14,11 @@ interface YoutubeClientService {
     oauthClient: OAuth2Client,
     authorizationToken: string
   ): Promise<void>;
+  setGlobalGoogleAuthentication(OAuthClient: OAuth2Client): void;
 }
 
 export const youtubeClientService: ClientService & YoutubeClientService = {
-  createOAuthClient: async (credentials: ServiceCredentials) => {
+  createOAuthClient: (credentials: ServiceCredentials) => {
     return new OAuth2(
       credentials.web.clientId,
       credentials.web.clientSecret,
@@ -58,4 +59,9 @@ export const youtubeClientService: ClientService & YoutubeClientService = {
       console.error(error);
     }
   },
+  setGlobalGoogleAuthentication: (OAuthClient: OAuth2Client) {
+    google.options({
+      auth: OAuthClient
+    })
+  }
 };

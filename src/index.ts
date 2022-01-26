@@ -1,6 +1,4 @@
 import express from 'express';
-import tokenUtils from './spotify/authorization/token-utils';
-import getFollowingArtists from './spotify/following-artists/folowing-artists';
 import { youtubeClientService } from './youtube/youtubeService';
 
 import {
@@ -36,22 +34,28 @@ const YOUTUBE_CREDENTIALS = {
 };
 
 app.get('/spotify/login', async (_req, res) => {
-  const { createOAuthClient, redirect, waitForServiceCallback } = spotifyClientService;
-  const oAuthClient = await createOAuthClient(SPOTIFY_CREDENTIALS);
+  const { createOAuthClient, redirect, waitForServiceCallback } =
+    spotifyClientService;
+  const oAuthClient = createOAuthClient(SPOTIFY_CREDENTIALS);
   if (typeof oAuthClient === 'string') {
     redirect(res, oAuthClient);
-    await waitForServiceCallback(app)
+    await waitForServiceCallback(app);
   }
 });
 
 app.get('/youtube/login', async (_req, _res) => {
-  const { requestUserConsent, waitForServiceCallback, createOAuthClient } =
-    youtubeClientService;
-  const OAuthClient = await createOAuthClient(YOUTUBE_CREDENTIALS);
+  const {
+    requestUserConsent,
+    waitForServiceCallback,
+    createOAuthClient,
+    requestServiceForAccessToken,
+  } = youtubeClientService;
+  const OAuthClient = createOAuthClient(YOUTUBE_CREDENTIALS);
   requestUserConsent(OAuthClient);
-
   const authorizationToken = await waitForServiceCallback(app);
-  console.log(authorizationToken)
+  if (OAuthClient && typeof OAuthClient !== 'string' && authorizationToken) {
+    await requestServiceForAccessToken(OAuthClient, authorizationToken);
+  }
 });
 
 app.listen(port, () => {

@@ -9,7 +9,7 @@ interface SpotifyClientService {
 }
 
 export const spotifyClientService: ClientService & SpotifyClientService = {
-  createOAuthClient: async (credentials: Credentials) => {
+  createOAuthClient: (credentials: Credentials) => {
     const { clientId, redirectUri } = credentials.web;
     const scopes = 'user-read-private user-read-email user-follow-read';
     return (
